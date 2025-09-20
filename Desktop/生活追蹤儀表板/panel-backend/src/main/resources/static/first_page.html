@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh Hang ">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 生活重要場所登記頁面</title>  
+</head>
+
+    <body>
+
+
+        <h1> 重要場所登記 </h1>
+        <p>＃這邊應該要是一個table可以輸入重要場所的經緯度</p>
+
+        <br>
+        <div id="location"></div>
+
+
+
+    <script>
+    //這段原本的語法當中少了非同步的概念，意思是當腳本呼叫API數據並不會理可以以物件的姿態馬上成為腳本的權域變數，
+    // 根據不同API的需要使用譬如像callback函數之類的方法去把需要的物件招回。
+
+    // 如果確認裝置是否離開特定區域，重心應該要放在“誤差”上而非地點本身，也就是說一開始就可以將所需要的誤差物件給定義出來。
+      const x = document.getElementById("location");
+
+      const DWELL_MS = 10000;
+      const CHECK_EVERY_MS = 2000;
+      const LAT_DELTA = 0.00005;
+      const LNG_DELTA = 0.00005;
+
+      let anchorPos =  null;
+      let lastPos = null ;
+      let stillInThere = true;
+      const startedAt = Date.now();
+
+      if ( !('geolocation' in navigator )) {
+        x.textContent = "此瀏覽器不支援地理位置。"
+      }
+
+      else {
+
+         const watchId  =  navigator.geolocation.watchPosition( (pos)=> {
+
+
+             lastPos = pos;
+             if (!anchorPos) anchorPos = pos;
+
+             const {latitude, longitude} = pos.coords;
+             x.innerHTML =`緯度: ${latitude} <br>經度: ${longitude}`;
+
+             const dLAT = Math.abs(latitude - anchorPos.coords.latitude);
+             const dLNG = Math.abs(longitude - anchorPos.coords.longitude);
+
+             if (dLAT > LAT_DELTA || dLNG > LNG_DELTA) {
+
+                 stillInThere = false //邏輯上真實世界不符合情境
+             }
+             },
+
+             (err) => {
+                 x.textContent = `定位失敗: ${err.message}, (code ${err.code}) `;
+                 console.log('定位失敗', err);
+             },
+                 {enableHighAccuracy: true, timeout: 100000, maximumAge: 0}
+         )
+
+          // JS的一大特點是可以將函數定濃縮一個常數ID去確認執行的先後順序。
+          const timerId = setInterval( async() => {
+              const now = Date.now();
+
+              if (now - startedAt > DWELL_MS) {
+                  clearInterval(timerId);
+                  navigator.geolocation.clearWatch(watchId);
+
+                  if (stillInThere &&lastPos) {
+
+                      const payload = {
+                          locationName:"豐原向陽星巴克",
+                          latitude:lastPos.coords.latitude,
+                          longitude:lastPos.coords.longitude
+                      }
+
+
+                      try {
+
+                          const res = await fetch("/location", {
+                                  method: "POST",
+                                  headers: { "Content-Type" : "application/json" },
+                                  body: JSON.stringify(payload)
+                              }
+                          )
+                          const ct = res.headers.get("Content-Type") || '';
+                          let result = null;
+                          if (res.ok && ct.includes("application/json")) {
+                              result = await res.json();
+                          } else if (res.status === 204) {
+                              result = {status: "no_content"};
+                          } else if (!res.ok) {
+                              throw new Error("HTTP" + res.status);
+                          }
+
+                          console.log('停留時間已超過30分鐘，已登記！', result);
+                      } catch (err) {
+                          console.log('送出失敗', err);
+                      }
+                  }
+
+          else {console.log('中途離開，不登記!');}
+          }
+              } ,CHECK_EVERY_MS)
+
+      }
+
+
+
+    </script>
+</body>
+</html>
+
+
+
+設計程式的過程應該要考慮到使每個環節都可以被追蹤
