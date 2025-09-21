@@ -23,17 +23,24 @@
     // 根據不同API的需要使用譬如像callback函數之類的方法去把需要的物件招回。
 
     // 如果確認裝置是否離開特定區域，重心應該要放在“誤差”上而非地點本身，也就是說一開始就可以將所需要的誤差物件給定義出來。
+
+    //今天debug 弄老半弄了一堆測試連後端都多配置了一些依靠，做結果只是網頁的快取沒有釋放掉，下次遇到這種不知道問題出在哪的狀況，
+    //最重要的是細心的觀察遭遇到的所有過程，並且細心的一一推敲因果，往前的路上必定要去適應新環境。
+
+
+    //一個場所一天設定一次
       const x = document.getElementById("location");
 
       const DWELL_MS = 10000;
-      const CHECK_EVERY_MS = 2000;
+      const CHECK_EVERY_MS = 5000;
       const LAT_DELTA = 0.00005;
       const LNG_DELTA = 0.00005;
+
 
       let anchorPos =  null;
       let lastPos = null ;
       let stillInThere = true;
-      const startedAt = Date.now();
+      let startedAt = Date.now();
 
       if ( !('geolocation' in navigator )) {
         x.textContent = "此瀏覽器不支援地理位置。"
@@ -42,6 +49,7 @@
       else {
 
          const watchId  =  navigator.geolocation.watchPosition( (pos)=> {
+             console.log("watchId為:", watchId);
 
 
              lastPos = pos;
@@ -67,17 +75,37 @@
          )
 
           // JS的一大特點是可以將函數定濃縮一個常數ID去確認執行的先後順序。
-          const timerId = setInterval( async() => {
+          // 設計每天登載一次，24小時後重新紀錄，後端還要加上累計次數，理想情況應該是每一次記場所位置都新增一筆條目到
+          // 後端的資料庫才是，那麼問題是，如果用setInterval去設定時追蹤的功能網頁就勢必就得一直開著，
+          // 在理想的情況下我希望瀏覽器會替我記憶這個函數的“狀態”，這個狀態告訴我什麼時候使用過、使用帶來的結果是什麼諸如此類被記憶下的
+          // “有用的資訊"，讓我能夠根據這個“狀態”近一步做操作，現在我能夠直覺想到的是cookie的技術（錯誤，應該使用localstorage，cookie是專門用於登入狀態與偏好設定，記憶的目的主要用於與後端做互動。調閱伺服器資料。）
+          // 。也就是說如果我要記憶這個函數的使用時間再加以操作，中間是必有一連串與瀏覽器互動的過程是我要去設計的。
+          //所以我要寫一段 localstorage
+
+          //位置要持續做監控，然而30分鐘（時間區段到期後要重新計時開始新的一run），
+          //在功能上計時跟監聽位置不能停止，把送出資料的條件限定在送出資聊的scope。
+
+          setInterval( async() => {
               const now = Date.now();
 
               if (now - startedAt > DWELL_MS) {
-                  clearInterval(timerId);
-                  navigator.geolocation.clearWatch(watchId);
 
-                  if (stillInThere &&lastPos) {
+                 // let d1 = new Date();
+                 // const today = d1.getDate();
+                 // let d2 = new Date(localStorage.getItem("地點登錄時間"));
+                 // const enrollDate = d2.getDate()
+
+                  let m1 = new Date();
+                  const thisMinute = m1.getMinutes();
+                  console.log("當下分鐘數!",thisMinute)
+                  let m2 = new Date(localStorage.getItem("地點登錄時間"));
+                  const enrollMinute = m2.getMinutes();
+                  console.log("登錄時分鐘數！",enrollMinute)
+
+                  if (stillInThere &&lastPos && thisMinute>enrollMinute ) {
 
                       const payload = {
-                          locationName:"豐原向陽星巴克",
+                          locationName:"星巴克豐原大道門市",
                           latitude:lastPos.coords.latitude,
                           longitude:lastPos.coords.longitude
                       }
@@ -94,7 +122,12 @@
                           const ct = res.headers.get("Content-Type") || '';
                           let result = null;
                           if (res.ok && ct.includes("application/json")) {
-                              result = await res.json();
+                              result = await res.json();// 這邊要記載成功時間
+
+                              const now = new Date;
+                              localStorage.setItem("地點登錄時間", now.toISOString());
+                              console.log("地點登錄時間為:", localStorage.getItem("地點登錄時間"));
+
                           } else if (res.status === 204) {
                               result = {status: "no_content"};
                           } else if (!res.ok) {
@@ -107,10 +140,10 @@
                       }
                   }
 
-          else {console.log('中途離開，不登記!');}
-          }
+          else {console.log('中途離開，不登記!')};
+              startedAt = Date.now();
+          } console.log('尚未到達30分鐘')
               } ,CHECK_EVERY_MS)
-
       }
 
 
