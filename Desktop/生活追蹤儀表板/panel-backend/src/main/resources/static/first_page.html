@@ -29,7 +29,9 @@
 
 
     //一個場所一天設定一次
+
       const x = document.getElementById("location");
+
 
       const DWELL_MS = 10000;
       const CHECK_EVERY_MS = 5000;
@@ -41,6 +43,7 @@
       let lastPos = null ;
       let stillInThere = true;
       let startedAt = Date.now();
+      let posName = null ;
 
       if ( !('geolocation' in navigator )) {
         x.textContent = "此瀏覽器不支援地理位置。"
@@ -48,7 +51,7 @@
 
       else {
 
-         const watchId  =  navigator.geolocation.watchPosition( (pos)=> {
+         const watchId  =  navigator.geolocation.watchPosition( async (pos)=> {
              console.log("watchId為:", watchId);
 
 
@@ -57,6 +60,8 @@
 
              const {latitude, longitude} = pos.coords;
              x.innerHTML =`緯度: ${latitude} <br>經度: ${longitude}`;
+
+             posName = await getLocationName(longitude,latitude);
 
              const dLAT = Math.abs(latitude - anchorPos.coords.latitude);
              const dLNG = Math.abs(longitude - anchorPos.coords.longitude);
@@ -85,6 +90,32 @@
           //位置要持續做監控，然而30分鐘（時間區段到期後要重新計時開始新的一run），
           //在功能上計時跟監聽位置不能停止，把送出資料的條件限定在送出資聊的scope。
 
+         // 取得地裡位置名稱
+
+          async function getLocationName (longitude,latitude){
+
+             const access_token = "pk.eyJ1IjoibWFzb24tbGlhbiIsImEiOiJjbWZ1cHRncG8xOHQ1Mm9wd2t2d2Fmb3RiIn0.iw9_sT2dqPSjlBzcwZYI0g" ;
+             const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${longitude}&latitude=${latitude}&access_token=${access_token}`
+
+              try {
+                  const response = await fetch(url);
+                  const data = await response.json();
+                  console.log("回傳資料:",data);
+
+                  if (data.features && data.features.length > 0) {
+                      const placeName = data.features[0].properties.name;
+                      console.log('取得地點為:', placeName);
+                      return placeName;
+                  } else console.log('找不到地理名稱！')
+                  return "未知地理名稱"
+              }catch (err){  console.log('資料取得失敗')
+             return "錯誤"
+             }
+
+          }
+
+
+
           setInterval( async() => {
               const now = Date.now();
 
@@ -94,18 +125,20 @@
                  // const today = d1.getDate();
                  // let d2 = new Date(localStorage.getItem("地點登錄時間"));
                  // const enrollDate = d2.getDate()
+                 //
+                 //  let m1 = new Date();
+                 //  const thisMinute = m1.getMinutes();
+                 //  console.log("當下分鐘數!",thisMinute)
+                 //  let m2 = new Date(localStorage.getItem("地點登錄時間"));
+                 //  const enrollMinute = m2.getMinutes();
+                 //  console.log("登錄時分鐘數！",enrollMinute)  && thisMinute>enrollMinute
 
-                  let m1 = new Date();
-                  const thisMinute = m1.getMinutes();
-                  console.log("當下分鐘數!",thisMinute)
-                  let m2 = new Date(localStorage.getItem("地點登錄時間"));
-                  const enrollMinute = m2.getMinutes();
-                  console.log("登錄時分鐘數！",enrollMinute)
+                  if (stillInThere &&lastPos) {
 
-                  if (stillInThere &&lastPos && thisMinute>enrollMinute ) {
+                      console.log("取得地點為:",posName);
 
                       const payload = {
-                          locationName:"星巴克豐原大道門市",
+                          locationName:posName,
                           latitude:lastPos.coords.latitude,
                           longitude:lastPos.coords.longitude
                       }
