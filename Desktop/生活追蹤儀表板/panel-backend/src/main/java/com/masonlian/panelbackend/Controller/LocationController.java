@@ -1,11 +1,11 @@
 package com.masonlian.panelbackend.Controller;
 
 
-import Dto.LocationData;
+import Dto.LocationJournal;
+import com.masonlian.panelbackend.request.LocationData;
 import com.masonlian.panelbackend.Service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,19 +16,21 @@ public class LocationController {
 
     @Autowired
     private LocationService locationService;
+
     // 先移除 consumes/produces 做測試
+    //一個locationData 進來至少要有
 
+    @PostMapping("/location") public ResponseEntity<LocationJournal> enrollLocation(@RequestBody LocationData locationData ){
 
-    @PostMapping("/location") public ResponseEntity<Integer> enrollLocation(@RequestBody LocationData locationData ){
 
         if(locationData != null){
-            System.out.println(locationData.getLocationName());
-            System.out.println(locationData.getLatitude());
-            System.out.println(locationData.getLongitude());
-           // System.out.println(locationData.getAcquiringTime());
 
-           Integer locationId =  locationService.enrollLocation(locationData);
-           return ResponseEntity.status(HttpStatus.OK).body(locationId);
+
+           Integer journalId  =  locationService.enrollLocation(locationData);
+           LocationJournal enrolledLocationData = locationService.getJournalById(journalId);
+           return ResponseEntity.status(HttpStatus.OK).body(enrolledLocationData);
+
+
 
         }
         else {

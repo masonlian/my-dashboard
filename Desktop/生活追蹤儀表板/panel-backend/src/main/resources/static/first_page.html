@@ -44,6 +44,7 @@
       let stillInThere = true;
       let startedAt = Date.now();
       let posName = null ;
+      let payload = null
 
       if ( !('geolocation' in navigator )) {
         x.textContent = "此瀏覽器不支援地理位置。"
@@ -51,7 +52,7 @@
 
       else {
 
-         const watchId  =  navigator.geolocation.watchPosition( async (pos)=> {
+         const watchId  =  navigator.geolocation.watchPosition(  (pos)=> {
              console.log("watchId為:", watchId);
 
 
@@ -61,7 +62,7 @@
              const {latitude, longitude} = pos.coords;
              x.innerHTML =`緯度: ${latitude} <br>經度: ${longitude}`;
 
-             posName = await getLocationName(longitude,latitude);
+
 
              const dLAT = Math.abs(latitude - anchorPos.coords.latitude);
              const dLNG = Math.abs(longitude - anchorPos.coords.longitude);
@@ -134,14 +135,18 @@
                  //  console.log("登錄時分鐘數！",enrollMinute)  && thisMinute>enrollMinute
 
                   if (stillInThere &&lastPos) {
-
                       console.log("取得地點為:",posName);
 
-                      const payload = {
-                          locationName:posName,
+                      posName = await getLocationName(lastPos.coords.longitude,lastPos.coords.latitude);
+
+                      payload = {
+                          locationName: posName,
                           latitude:lastPos.coords.latitude,
-                          longitude:lastPos.coords.longitude
+                          longitude:lastPos.coords.longitude,
+                          acquiringTime:Date.now()
                       }
+
+
 
 
                       try {
