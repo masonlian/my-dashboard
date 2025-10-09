@@ -1,18 +1,27 @@
-package com.masonlian.panelbackend.request;
+package Dto;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 
-public class LocationData {
+public class FinalLocationJournal {
 
-    private  BigDecimal latitude;
+    private Integer journalId;
+    private BigDecimal latitude;
     private BigDecimal longitude;
-    private  String publicName;
-    private  Timestamp acquiringTime;
-    private String address ;
+    private Timestamp acquiringTime;
+    private String publicName;
+    private String address;
     private String poi;
-    private String placeId ;
+    private String placeId;
+
+
+    public Integer getJournalId() {
+        return journalId;
+    }
+
+    public void setJournalId(Integer journalId) {
+        this.journalId = journalId;
+    }
 
     public BigDecimal getLatitude() {
         return latitude;
@@ -30,20 +39,20 @@ public class LocationData {
         this.longitude = longitude;
     }
 
-    public String getPublicName() {
-        return publicName;
-    }
-
-    public void setPublicName(String publicName) {
-        this.publicName = publicName;
-    }
-
     public Timestamp getAcquiringTime() {
         return acquiringTime;
     }
 
     public void setAcquiringTime(Timestamp acquiringTime) {
         this.acquiringTime = acquiringTime;
+    }
+
+    public String getPublicName() {
+        return publicName;
+    }
+
+    public void setPublicName(String publicName) {
+        this.publicName = publicName;
     }
 
     public String getAddress() {
@@ -54,19 +63,19 @@ public class LocationData {
         this.address = address;
     }
 
-    public String getPoi() {
-        return poi;
-    }
-
-    public void setPoi(String poi) {
-        this.poi = poi;
-    }
-
     public String getPlaceId() {
         return placeId;
     }
 
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
+    }
+
+    public String getPoi() {
+        return poi;
+    }
+
+    public void setPoi(String poi) {
+        this.poi = poi;
     }
 }

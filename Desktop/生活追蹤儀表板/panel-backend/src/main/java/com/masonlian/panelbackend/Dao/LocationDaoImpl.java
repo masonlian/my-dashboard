@@ -1,8 +1,9 @@
 package com.masonlian.panelbackend.Dao;
 
 import Dto.Counts;
-import Dto.LocationJournal;
-import com.masonlian.panelbackend.RowMapper.LocationJournalRowMapper;
+import Dto.FinalLocationJournal;
+import com.masonlian.panelbackend.RowMapper.CountsRowMapper;
+import com.masonlian.panelbackend.RowMapper.FinalLocationJournalRowMapper;
 import com.masonlian.panelbackend.request.LocationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class LocationDaoImpl implements LocationDao {
         System.out.println(locationData.getLongitude());
 
 
-       String sql = "INSERT location_journal (  longitude, latitude, acquiring_time, public_name, address, poi ) VALUES ( :public_name, :longitude, :latitude, :acquiring_time, :address, :poi ) ";
+       String sql = "INSERT location_journal (  longitude, latitude, acquiring_time, public_name, address, poi, place_id ) VALUES ( :longitude, :latitude, :acquiring_time, :public_name , :address, :poi, :place_id ) ";
        Map<String,Object > map = new HashMap<>();
 
        map.put("public_name", locationData.getPublicName());
@@ -44,6 +45,7 @@ public class LocationDaoImpl implements LocationDao {
        map.put("acquiring_time", locationData.getAcquiringTime());
        map.put("address", locationData.getAddress());
        map.put("poi", locationData.getPoi());
+       map.put("place_id", locationData.getPlaceId());
 
        KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -53,14 +55,14 @@ public class LocationDaoImpl implements LocationDao {
 
    }
     @Override
-    public  LocationJournal getJournalById(Integer journalId){
+    public FinalLocationJournal getJournalById(Integer journalId){
 
         String sql = " SELECT * FROM location_journal WHERE journal_id = :journalId ";
         Map<String,Object> map = new HashMap<>();
         map.put("journalId", journalId);
-        List< LocationJournal> locationJournalList =  namedParameterJdbcTemplate.query(sql,map, new LocationJournalRowMapper());
-       if(locationJournalList.size()>0){
-           return locationJournalList.get(0);
+        List< FinalLocationJournal> FinalLocationJournalList =  namedParameterJdbcTemplate.query(sql,map, new FinalLocationJournalRowMapper());
+       if(FinalLocationJournalList.size()>0){
+           return FinalLocationJournalList.get(0);
        } else  log.warn("找不到該ID代表資料:{}",journalId);
        return null;
 
@@ -69,7 +71,7 @@ public class LocationDaoImpl implements LocationDao {
     @Override
     public  Integer createCountsEntity (LocationData locationData){
 
-        String sql = " INSERT counts (address, poi, counts, latitude, longitude, month )   VALUES (:address, :poi, :counts, :latitude, :longitude, :month)";
+        String sql = " INSERT INTO counts (address, poi, counts, latitude, longitude, `month`, public_name )   VALUES (:address, :poi, :counts, :latitude, :longitude, :month , :public_name )";
 
         Map<String,Object> map = new HashMap<>();
         map.put("address", locationData.getAddress());
@@ -77,6 +79,7 @@ public class LocationDaoImpl implements LocationDao {
         map.put("counts",1);
         map.put("latitude", locationData.getLatitude());
         map.put("longitude", locationData.getLongitude());
+        map.put("public_name", locationData.getPublicName());
 
         LocalDateTime acquireTime =  locationData.getAcquiringTime().toLocalDateTime();
         Integer month = acquireTime.getMonthValue();
@@ -92,13 +95,15 @@ public class LocationDaoImpl implements LocationDao {
 
     @Override
     public Counts  getCountsByAddress(String address){
-        String sql = " SELECT * FROM location_journal WHERE  address = :address ";
+
+        System.out.println("地址為:"+address);
+        String sql = " SELECT * FROM counts  WHERE address = :address";
         Map<String,Object> map = new HashMap<>();
         map.put("address", address);
-        List<Counts> countsList =  namedParameterJdbcTemplate.query(sql,map,new LocationJournalRowMapper());
+        List<Counts> countsList = namedParameterJdbcTemplate.query(sql,map, new CountsRowMapper());
         if(countsList.size()>0){
             return countsList.get(0);
-        }else  log.warn("並無此地址。");
+        }else log.warn("資料庫中並無此地址。");
         return null;
 
     }
@@ -106,17 +111,36 @@ public class LocationDaoImpl implements LocationDao {
     @Override
     public Integer addCounts(Counts existedCounts){
 
-        String sql = " UPDATE counts  SET counts = :counts  WHERE counts_id = :countsId  ";
+
+
+        String sql = " UPDATE counts  SET counts = :counts  WHERE counts_id = :counts_id ";
+
         Map<String,Object> map = new HashMap<>();
         map.put("counts",existedCounts.getCounts());
         map.put("counts_id",existedCounts.getCountsId());
         namedParameterJdbcTemplate.update(sql,map);
 
 
-        Counts countsAfter =  getCountsByAddress(existedCounts.getAddress());
+        Counts countsAfter =  getCountsByPublicName(existedCounts.getPublicName());
         return countsAfter.getCounts();
 
 
     }
+
+    @Override
+    public Counts getCountsByPublicName(String publicName){
+
+        String sql = " SELECT * FROM counts WHERE public_name = :public_name ";
+        Map<String,Object> map = new HashMap<>();
+        map.put("public_name", publicName);
+
+        List<Counts> countsList =  namedParameterJdbcTemplate.query(sql,map,new CountsRowMapper());
+        if(countsList.size()>0){
+            return countsList.get(0);
+        }
+        else return null;
+
+    }
+
 
 }

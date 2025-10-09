@@ -1,6 +1,7 @@
 package com.masonlian.panelbackend.Service;
 
 import Dto.Counts;
+import Dto.FinalLocationJournal;
 import Dto.LocationJournal;
 import com.masonlian.panelbackend.request.LocationData;
 import com.masonlian.panelbackend.Dao.LocationDao;
@@ -29,15 +30,23 @@ public class LocationServiceImpl implements LocationService {
 
             Integer journalId = locationDao.enrollLocation(locationData);
 
-            Counts existedCounts = locationDao.getCountsByAddress(locationData.getAddress());//查總表
+            Counts existedCounts = locationDao.getCountsByPublicName(locationData.getPublicName());
 
             if (existedCounts != null) {
-                log.info("到達次數增加前為：{}",existedCounts.getCounts());
-                existedCounts.setCounts(existedCounts.getCounts() + 1);
-                Integer number  =  locationDao.addCounts(existedCounts);
 
+                System.out.println(existedCounts.getCounts());
+
+                log.info("到達次數增加前為：{}",existedCounts.getCounts());
+
+                Integer afterCount = existedCounts.getCounts()+1;
+                existedCounts.setCounts(afterCount);
+
+                System.out.println("增加後的次數應該是："+afterCount);
+
+                Integer number  =  locationDao.addCounts(existedCounts);
                 log.info("到達次數增加後為：{}",number);
             }
+
             else {
                 Integer countsId = locationDao.createCountsEntity(locationData);
                 log.info("新增的Counts ID為：{}！", countsId);
@@ -51,7 +60,7 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public  LocationJournal getJournalById(Integer journalId){
+    public FinalLocationJournal getJournalById(Integer journalId){
 
         if (journalId != null) {
             return locationDao.getJournalById(journalId);

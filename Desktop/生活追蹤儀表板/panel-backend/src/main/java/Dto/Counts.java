@@ -3,6 +3,7 @@ package Dto;
 import java.math.BigDecimal;
 
 public class Counts {
+
     private  Integer countsId;
     private  String  address  ;
     private String poi ;
@@ -10,6 +11,16 @@ public class Counts {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Integer month;
+
+    public String getPublicName() {
+        return publicName;
+    }
+
+    public void setPublicName(String publicName) {
+        this.publicName = publicName;
+    }
+
+    private String publicName;
 
     public Integer getCountsId() {
         return countsId;
@@ -66,4 +77,5 @@ public class Counts {
     public void setMonth(Integer month) {
         this.month = month;
     }
+
 }
