@@ -124,9 +124,8 @@
 
 
               try {
+
                   console.log("準備送出的資料:", payload);
-
-
                   const res = await fetch(url, {
                           method: "POST",
                           headers: {"Content-Type": "application/json"},
@@ -149,6 +148,9 @@
                   }
 
                   console.log('停留時間已超過30分鐘，已登記！', result);
+                  localStorage.setItem("result",JSON.stringify(result))
+
+
               } catch (err) {
                   console.log('送出失敗', err);
               }
@@ -210,6 +212,8 @@
 
                       }
 
+                      const dialog = document.getElementById("list");
+                      const closeDialog = document.getElementById("closeDialog");
 
 
 
@@ -217,8 +221,7 @@
                       function showList() {
 
                           document.getElementById('list').showModal();
-                          const dialog = document.getElementById("list");
-                          const closeDialog = document.getElementById("closeDialog");
+
 
                           closeDialog.addEventListener("click",() => dialog.close());
 
@@ -270,9 +273,10 @@
 
 
                           console.log("資料已登載",locationJournal)
-
-
                           sendData("/location",locationJournal)
+                          dialog.close();
+                          window.location.assign("enroll_success.html")
+
 
                       }
 

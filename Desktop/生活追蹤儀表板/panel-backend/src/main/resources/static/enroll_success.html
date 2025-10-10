@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh Hang ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+</head>
+<body>
+
+<h1 id="place"> </h1>
+
+
+<script>
+
+    //之後可以用figma做一頁式網站 軌跡
+
+    const pos = JSON.parse(localStorage.getItem("result"));
+
+    const place = document.getElementById("place")
+    console.log("登載資料:",pos)
+    place.innerHTML = `您正位於:<br>${pos.publicName}`
+    localStorage.removeItem("result");
+    </script>
+</body>
+
+</html>
