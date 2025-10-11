@@ -21,73 +21,75 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class CollectDataController  {
+public class CollectDataController {
 
     @Autowired
     LocationService locationService;
 
     @PostMapping("/collectData")
-    public ResponseEntity<LocationData> addLocation(@RequestBody PlaceRequest placeRequest ) throws JsonProcessingException {
+    public ResponseEntity<LocationData> addLocation(@RequestBody List<PlaceRequest> placeRequestList) throws JsonProcessingException {
 
-        String  key =;
+        String key = ;
         String url = "https://places.googleapis.com/v1";
 
-        System.out.println(new ObjectMapper().writeValueAsString(placeRequest));
+        for (PlaceRequest placeRequest : placeRequestList) {
+            System.out.println(new ObjectMapper().writeValueAsString(placeRequest));
 
-        WebClient client = WebClient.builder()
-                .baseUrl(url)
-                .defaultHeader("Content-Type","application/json; charset=UTF-8")
-                .defaultHeader("X-Goog-Api-Key",key)
-                .defaultHeader("X-Goog-FieldMask", "places.formattedAddress","places.displayName","places.types","places.id","places.location")
-                .build();
+            WebClient client = WebClient.builder()
+                    .baseUrl(url)
+                    .defaultHeader("Content-Type", "application/json; charset=UTF-8")
+                    .defaultHeader("X-Goog-Api-Key", key)
+                    .defaultHeader("X-Goog-FieldMask", "places.formattedAddress", "places.displayName", "places.types", "places.id", "places.location")
+                    .build();
 
-        String response = client.
-                post().
-                uri("/places:searchText").
-                bodyValue(placeRequest.getPlaceApiRequest()).
-                retrieve().bodyToMono(String.class).
-                block();
+            String response = client.
+                    post().
+                    uri("/places:searchText").
+                    bodyValue(placeRequest.getPlaceApiRequest()).
+                    retrieve().bodyToMono(String.class).
+                    block();
 
-        System.out.println(response);
+            System.out.println(response);
 
-        ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
 
-        JsonNode root = mapper.readTree(response);
+            String address = root.path("places").get(0).path("formattedAddress").asText();
+            String publicName = root.path("places").get(0).path("displayName").path("text").asText();
+            String placeId = root.path("places").get(0).path("id").asText();
+            List<String> poiList = mapper.convertValue(root.path("places").get(0).path("types"), new TypeReference<List<String>>() {
+            });
+            String poi = poiList.toString();
 
-        String address = root.path("places").get(0).path("formattedAddress").asText();
-        String publicName= root.path("places").get(0).path("displayName").asText();
-        String placeId = root.path("places").get(0).path("id").asText();
-        List<String> poiList = mapper.convertValue(root.path("place").get(0).path("types"), new TypeReference<List<String>>() {} );
-        String poi = poiList.toString();
-
-        Long lat  = root.path("places").get(0).path("location").path("latitude").asLong();
-        Long lon = root.path("places").get(0).path("location").path("longitude").asLong();
-
-        BigDecimal latitude = new BigDecimal(lat);
-        BigDecimal longitude = new BigDecimal(lon);
-        Timestamp acquiringTime = placeRequest.getAcquiringTime();
+            Double lat = root.path("places").get(0).path("location").path("latitude").asDouble();
+            Double lon = root.path("places").get(0).path("location").path("longitude").asDouble();
 
 
-        LocationData locationData = new LocationData();
-
-        locationData.setAddress(address);
-        locationData.setLatitude(latitude);
-        locationData.setLongitude(longitude);
-        locationData.setPublicName(publicName);
-        locationData.setAcquiringTime(acquiringTime);
-        locationData.setPoi(poi);
-        locationData.setPlaceId(placeId);
+            BigDecimal latitude = new BigDecimal(lat);
+            BigDecimal longitude = new BigDecimal(lon);
+            Timestamp acquiringTime = placeRequest.getAcquiringTime();
 
 
-        if(locationData != null) {
+            LocationData locationData = new LocationData();
 
-            locationService.enrollLocation(locationData);
-            return ResponseEntity.status(HttpStatus.OK).body(locationData);
+            locationData.setAddress(address);
+            locationData.setLatitude(latitude);
+            locationData.setLongitude(longitude);
+            locationData.setPublicName(publicName);
+            locationData.setAcquiringTime(acquiringTime);
+            locationData.setPoi(poi);
+            locationData.setPlaceId(placeId);
+
+
+            if (locationData != null) {
+
+                locationService.enrollLocation(locationData);
+            }
+
+            else System.out.println("此資料未被登記：" + placeRequest.getPlaceApiRequest().getTextQuery());
+
         }
-        else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-
 }
