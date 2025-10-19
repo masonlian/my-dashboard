@@ -1,8 +1,7 @@
 package com.masonlian.panelbackend.Service;
 
 
-import Dto.FinalLocationJournal;
-import Dto.LocationJournal;
+import com.masonlian.panelbackend.Dto.FinalLocationJournal;
 import com.masonlian.panelbackend.request.LocationData;
 import org.springframework.stereotype.Component;
 

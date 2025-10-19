@@ -1,4 +1,4 @@
-package Dto;
+package com.masonlian.panelbackend.Dto;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

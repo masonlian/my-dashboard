@@ -29,7 +29,7 @@ public class CollectDataController {
     @PostMapping("/collectData")
     public ResponseEntity<LocationData> addLocation(@RequestBody List<PlaceRequest> placeRequestList) throws JsonProcessingException {
 
-        String key = ;
+        String key = "";
         String url = "https://places.googleapis.com/v1";
 
         for (PlaceRequest placeRequest : placeRequestList) {

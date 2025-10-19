@@ -1,6 +1,6 @@
 package com.masonlian.panelbackend.RowMapper;
 
-import Dto.FinalLocationJournal;
+import com.masonlian.panelbackend.Dto.FinalLocationJournal;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

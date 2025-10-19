@@ -1,7 +1,6 @@
 package com.masonlian.panelbackend.RowMapper;
 
-import Dto.Counts;
-import Dto.LocationJournal;
+import com.masonlian.panelbackend.Dto.Counts;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

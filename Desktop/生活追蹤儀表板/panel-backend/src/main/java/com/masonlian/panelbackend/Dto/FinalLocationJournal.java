@@ -1,4 +1,4 @@
-package Dto;
+package com.masonlian.panelbackend.Dto;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

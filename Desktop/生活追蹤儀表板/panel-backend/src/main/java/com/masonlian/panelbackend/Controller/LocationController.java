@@ -1,9 +1,9 @@
 package com.masonlian.panelbackend.Controller;
 
 
-import Dto.FinalLocationJournal;
-import Dto.LocationJournal;
-import Dto.PlaceResponse;
+import com.masonlian.panelbackend.Dto.FinalLocationJournal;
+import com.masonlian.panelbackend.Dto.LocationJournal;
+import com.masonlian.panelbackend.Dto.PlaceResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.masonlian.panelbackend.request.LocationData;
 import com.masonlian.panelbackend.Service.LocationService;
@@ -55,7 +55,7 @@ public class LocationController {
     @GetMapping("/locationDetail")
     public ResponseEntity<LocationJournal> getLocationDetail(BigDecimal latitude, BigDecimal longitude) throws  Exception{
 
-        String key = ;
+        String key = "";
 
         String url1 = String.format("https://maps.googleapis.com/maps/api/geocode/json?latlng=%f,%f&radius=20&key=%s", latitude, longitude, key);
         WebClient client1 = WebClient.create(url1);

@@ -1,11 +1,9 @@
 package com.masonlian.panelbackend.Service;
 
-import Dto.Counts;
-import Dto.FinalLocationJournal;
-import Dto.LocationJournal;
+import com.masonlian.panelbackend.Dto.Counts;
+import com.masonlian.panelbackend.Dto.FinalLocationJournal;
 import com.masonlian.panelbackend.request.LocationData;
 import com.masonlian.panelbackend.Dao.LocationDao;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,15 @@ public class LocationServiceImpl implements LocationService {
 
                 System.out.println(existedCounts.getCounts());
 
+                Integer month = locationData.getAcquiringTime().toLocalDateTime().getMonthValue();
+
+                if(existedCounts.getMonth()!= month) {
+
+                    Integer countsId = locationDao.createCountsEntity(locationData);
+                    log.info("新增的Counts ID為：{}！", countsId);
+
+                }
+                else {
                 log.info("到達次數增加前為：{}",existedCounts.getCounts());
 
                 Integer afterCount = existedCounts.getCounts()+1;
@@ -45,6 +52,7 @@ public class LocationServiceImpl implements LocationService {
 
                 Integer number  =  locationDao.addCounts(existedCounts);
                 log.info("到達次數增加後為：{}",number);
+                }
             }
 
             else {

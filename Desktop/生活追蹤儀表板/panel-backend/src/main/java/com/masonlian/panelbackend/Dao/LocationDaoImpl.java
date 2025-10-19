@@ -1,7 +1,7 @@
 package com.masonlian.panelbackend.Dao;
 
-import Dto.Counts;
-import Dto.FinalLocationJournal;
+import com.masonlian.panelbackend.Dto.Counts;
+import com.masonlian.panelbackend.Dto.FinalLocationJournal;
 import com.masonlian.panelbackend.RowMapper.CountsRowMapper;
 import com.masonlian.panelbackend.RowMapper.FinalLocationJournalRowMapper;
 import com.masonlian.panelbackend.request.LocationData;
