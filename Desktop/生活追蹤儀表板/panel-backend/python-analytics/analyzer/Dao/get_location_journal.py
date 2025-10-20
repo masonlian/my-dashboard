@@ -5,6 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 import mysql.connector
 from dataclasses import dataclass
 from decimal import Decimal , getcontext
+import datetime
+
 
 conn = mysql.connector.connect(
         host="localhost",
@@ -20,7 +22,7 @@ class location_journal:
     journal_id:int
     latitude: Decimal
     longitude: Decimal
-    acquiring_time: str
+    acquiring_time:datetime.datetime
     public_name: str
     address: str
     poi: str
@@ -53,7 +55,7 @@ def get_location_data():
     
 
     cursor = conn.cursor( dictionary=True) #建立游標物件，設定dictionary=True以取得字典格式的結果
-    sql = "SELECT * FROM location_journal"
+    sql = "SELECT * FROM location_journal ORDER BY acquiring_time ASC"
     cursor.execute(sql) #執行SQL查詢
     results = cursor.fetchall()
     cursor.close() #關閉游標
