@@ -11,6 +11,6 @@ app.register_blueprint(analyzer_bp,url_prefix="/analysis_controller",threaded=Fa
 
 
 if __name__ =='__main__' : 
- app.run(port=5001,debug=True,threaded=False )
+ app.run(port=5001,debug=False,threaded=False )
 
  

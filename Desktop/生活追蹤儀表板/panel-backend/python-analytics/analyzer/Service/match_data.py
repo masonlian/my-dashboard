@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from decimal import Decimal , getcontext
 import math
 import numpy as np
+import pandas as pd
 from datetime import datetime , date , timedelta
 
 
@@ -29,8 +30,8 @@ def match_location_data():
 
    
    #entroypy = compute_entropy(data2)#回傳一個熵值
-   distance = compute_mobility_distance(data1) #回傳一個距離值
-   #matrix = compute_transition_matrix(data) #回傳一個機率矩陣
+   #distance = compute_mobility_distance(data1) #回傳一個距離值
+   compute_transition_matrix(data1) #回傳一個機率矩陣
    #match_region(entroypy,distance,matrix) 由於城市資料尚未建立資料，匹配的動作先暫此打住。
    #場所轉移矩陣是唯一用來刻畫行為結構的資料，在我的專案裡，最主要可以評斷一個人的1.生活穩定度 2.最常在哪兩個地點間來回 3.預測一個人下一個可能出現的地點。
    
@@ -187,10 +188,6 @@ def compute_mobility_distance(data1):
          
       daily_distances.append(distance)
          
-         
-    
-   
-    
     
     for i in daily_distances:
         print("每日平均移動距離為:",i,end="\n")
@@ -198,6 +195,225 @@ def compute_mobility_distance(data1):
     
     average_distance = np.mean(daily_distances)
     print("最終計算出來的平均移動距離為:", average_distance, end="\n")
+ 
+def compute_transition_matrix(data1):
+    
+    
+    #首先先把poi與public_name拉出來形成一種物件據此為單位，按照時間順序建立一個陣列。
+    #再把這個順序當中有重複的部分給淘汰掉。
+    
+    @dataclass(eq=True, frozen=False)
+    class poi_sequence :
+        public_name:str
+        poi: str
+        order_number:int
+        
+        def __hash__(self):
+          return hash((self.public_name, self.poi, self.order_number))
+
+        def __eq__(self, other):
+          return (
+            self.public_name == other.public_name and
+            self.poi == other.poi and
+            self.order_number == other.order_number
+        )
+    @dataclass
+    class steady_probility:
+        public_name:str
+        poi: str
+        probility:float
+        
+        
+        
+    poi_sequence_array=[]
+        
+    for i in range(len(data1)-1):
+        if  data1[i+1].public_name !=  data1[i].public_name:
+            poi_sequence_array.append(data1[i])      
+            
+    
+    poi_and_name: list[poi_sequence]=[]
+    
+    for location_journal in poi_sequence_array:
+         poi_object = poi_sequence( public_name = location_journal.public_name,
+                                   poi=location_journal.poi,
+                                   order_number=None )
+         poi_and_name.append(poi_object)
+    
+    
+    # for object in poi_and_name:
+      # print("public_name:",object.public_name,"poi:", object.poi,end="\n")
+      
+    #還需要一個沒有重複元素的矩陣。 
+      
+    poi_set =[]    
+    seen=set()
+    for p in poi_and_name:
+        if p.public_name not in seen:
+            seen.add(p.public_name)
+            poi_set.append(p)
+    
+    for idx , p in enumerate(poi_set):
+        p.order_number = idx
+    
+    N= len(poi_set)
+    
+    # count的位置隨著row_index變動
+    # 可能要先將這個count_matrix的from跟to 都先賦值，然而我想要找到一個方法直接把字串與計數直接設進去。
+    count_matrix = np.full((N,N),0.0,dtype=float)
+    
+    #adjacent_list = []
+     
+    #關鍵點在於建立以public_name為key的查表搜集相對應所需的index
+     
+    total_count_list =[] 
+    index_map = { p.public_name : p.order_number for p in poi_set}
+    for i in index_map:
+        print(i,end="")
+    
+    #從matrix map到index_number，要設定進入新矩陣的變化數列最好是連續的以防數值跑掉
+    for i in range(len(poi_and_name)-1):
+        
+        row = index_map[poi_and_name[i].public_name]
+        column= index_map[poi_and_name[i+1].public_name]
+        count_matrix[row][column]+=1
+    total_count_list = np.sum(count_matrix,axis=1)    
+    
+    for i in range(N):
+      for j in range(N):
+          print(count_matrix[i][j],end=",")
+      print("\n")
+    
+        
+    print("總次數陣列:",total_count_list)
+            
+    
+
+    
+    #接下來定義機率矩陣
+    probility_matrix = np.full((N,N),0.0,dtype=float)
+    
+    for i in range(N):
+        total_count = total_count_list[i]
+        if total_count != 0 :
+          for j in range(N):
+              print("i :",i,"j:",j,"total_count:",total_count)
+              if i == j:
+                 continue
+              else:
+                c= count_matrix[i][j] 
+                p = c/total_count
+                probility_matrix[i][j]= p
+                print(f"現在運算到第{i}行第{j}列，機率為{probility_matrix[i][j]}。",end="\n")
+           
+        
+            
+            
+    for i in range(N):
+      for j in range(N):
+          print(probility_matrix[i][j],end=",")
+      print("\n")
+    print("對於每個poi到其他地區的機率總和為:",np.sum(probility_matrix,axis=1))
+    
+    eigval, eigvecs = np.linalg.eig(probility_matrix.T)
+    index = np.argmin(np.abs(eigval-1))
+    steady = np.real(eigvecs[:,index])
+    steady = np.abs(steady)
+    steady = steady/ np.sum(steady)
+    
+    print("穩定向量為:",steady)
+    
+    steady_probility_list = []
+    
+    for i in range(len(steady)):
+        p = steady_probility(public_name = poi_set[i].public_name,
+                         poi= poi_set[i].poi,
+                         probility=steady[i] )
+        steady_probility_list.append(p)
+        
+    total_probility =0.0
+    for i in range(len(steady_probility_list)):
+        print(
+              "偏好poi:",steady_probility_list[i].poi,
+              "機率:",steady_probility_list[i].probility,
+              end="\n")
+        total_probility+= steady_probility_list[i].probility
+    print("確認穩定機率向量總和為：",total_probility)
+        
+        
+        
+        
+    
+
+    
+    
+
+            
+        
+            
+    
+        
+    
+                
+            
+            
+            
+            
+            
+            
+    
+        
+        
+
+                
+            
+      
+           
+
+            
+                
+                      
+                      
+                      
+       
+                
+              
+           
+           
+           
+           
+           
+    
+
+        
+               
+               
+               
+                                  
+               
+               
+              
+            
+               
+               
+               
+               
+        
+               
+              
+               
+              
+                   
+                    
+                   
+                
+                   
+               
+               
+           
+    
+    
+    
 
   
           
