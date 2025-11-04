@@ -1,0 +1,67 @@
+[
+  {
+    "city_name": "Core-Metro",
+    "description": "高密度、多樣化的都市核心型城市。行為多樣但集中於主要活動中心。",
+    "entropy": 2.6,
+    "avg_distance": 5.0,
+    "max_distance": 15.0,
+    "steady_vector": [
+      { "poi": "Home", "probility": 0.55 },
+      { "poi": "Work", "probility": 0.25 },
+      { "poi": "Leisure", "probility": 0.15 }
+    ],
+    "transition_type": "single-core"
+  },
+  {
+    "city_name": "Commuter-Belt",
+    "description": "以通勤為主要節奏的雙中心型城市。白天外出、夜晚返回，節奏穩定。",
+    "entropy": 1.9,
+    "avg_distance": 12.0,
+    "max_distance": 35.0,
+    "steady_vector": [
+      { "poi": "Home", "probility": 0.35 },
+      { "poi": "Work", "probility": 0.45 },
+      { "poi": "Leisure", "probility": 0.15 }
+    ],
+    "transition_type": "dual-core"
+  },
+  {
+    "city_name": "Sprawl-Car",
+    "description": "外擴型汽車城市，距離遠、活動分散，依賴交通工具連結。",
+    "entropy": 1.4,
+    "avg_distance": 20.0,
+    "max_distance": 60.0,
+    "steady_vector": [
+      { "poi": "Home", "probility": 0.25 },
+      { "poi": "Work", "probility": 0.25 },
+      { "poi": "Leisure", "probility": 0.25 }
+    ],
+    "transition_type": "random-dispersed"
+  },
+  {
+    "city_name": "Compact-Local",
+    "description": "緊湊型在地城市，生活圈小而穩定，重複性高、活動集中。",
+    "entropy": 2.0,
+    "avg_distance": 3.0,
+    "max_distance": 8.0,
+    "steady_vector": [
+      { "poi": "Home", "probility": 0.7 },
+      { "poi": "Work", "probility": 0.2 },
+      { "poi": "Leisure", "probility": 0.1 }
+    ],
+    "transition_type": "tight-core"
+  },
+  {
+    "city_name": "Tourist-Mixed",
+    "description": "觀光或節奏不規則型城市，活動高變化、場所切換頻繁。",
+    "entropy": 2.8,
+    "avg_distance": 7.0,
+    "max_distance": 25.0,
+    "steady_vector": [
+      { "poi": "Home", "probility": 0.25 },
+      { "poi": "Work", "probility": 0.25 },
+      { "poi": "Leisure", "probility": 0.25 }
+    ],
+    "transition_type": "multi-core"
+  }
+]
