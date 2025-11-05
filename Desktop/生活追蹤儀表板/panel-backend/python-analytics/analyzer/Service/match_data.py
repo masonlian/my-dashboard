@@ -33,7 +33,7 @@ def match_location_data():
    @dataclass
    class city_score:
        city_name:str
-       discription:str
+       description:str
        match_score:float
    @dataclass
    class SteadyProb:
@@ -103,13 +103,15 @@ def match_location_data():
      distance_similarity =  compute_distance_similarity(avg_distance,city_avg_distance,city_to_match)
      steady_matrix_similarity = compute_steady_matrix_similarity(user_major_activity,city.steady_vector) #回傳一個穩定狀態餘弦相似度
      
-     match_score= (0.5*steady_matrix_similarity) + (0.3*distance_similarity) + (0.2*entroypy_similarity)
-     city_score(city_name=city_type.city_name,discription=city_type.discription,match_score=match_score)
-     match_scores_list.append(city_score)
-     
+     match_score_result= (0.5*steady_matrix_similarity) + (0.3*distance_similarity) + (0.2*entroypy_similarity)
+     candidate_city=city_score(city_name=city.city_name,description=city.description, match_score=match_score_result)
+     match_scores_list.append(candidate_city)
+   
    most_matched_city =max(match_scores_list, key = lambda x: x.match_score )
    
-   print("最符合的城市為:", most_matched_city.city_name, "說明為:", most_matched_city.discription, "匹配分數為:", most_matched_city.match_score , end="\n")
+   print("最符合的城市為:", most_matched_city.city_name, "說明為:", most_matched_city.description, "匹配分數為:", most_matched_city.match_score , end="\n")
+   
+   return most_matched_city, entropy, avg_distance, steady_metrix
 
 
 #需要的變數有 1.單一場所抵達次數，2.場所總次數 3.出現過的地點數量 
