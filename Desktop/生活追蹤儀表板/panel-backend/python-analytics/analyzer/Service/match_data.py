@@ -17,8 +17,19 @@ import json
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CITY_TEMPLATE_PATH= os.path.join(BASE_DIR, "Data", "city_template.json")
 
-print("CITY_TEMPLATE_PATH:", CITY_TEMPLATE_PATH)
-
+@dataclass
+class city_score:
+    city_name:str
+    description:str
+    match_score:float
+    
+@dataclass
+class match_result:
+    return_entropy:float
+    return_avg_distance:float
+    return_steady_metrix:list
+    return_most_matched_city:city_score
+    
 
 
    #match_region(entroypy,distance,matrix) 由於城市資料尚未建立資料，匹配的動作先暫此打住。
@@ -30,11 +41,7 @@ print("CITY_TEMPLATE_PATH:", CITY_TEMPLATE_PATH)
    #print("Transition Matrix:", matrix, end="\n")
 def match_location_data():
     
-   @dataclass
-   class city_score:
-       city_name:str
-       description:str
-       match_score:float
+
    @dataclass
    class SteadyProb:
        poi:str
@@ -110,8 +117,9 @@ def match_location_data():
    most_matched_city =max(match_scores_list, key = lambda x: x.match_score )
    
    print("最符合的城市為:", most_matched_city.city_name, "說明為:", most_matched_city.description, "匹配分數為:", most_matched_city.match_score , end="\n")
+   match_return = match_result(return_entropy=entropy, return_avg_distance=avg_distance, return_steady_metrix=steady_metrix, return_most_matched_city=most_matched_city)
    
-   return most_matched_city, entropy, avg_distance, steady_metrix
+   return match_return
 
 
 #需要的變數有 1.單一場所抵達次數，2.場所總次數 3.出現過的地點數量 

@@ -18,13 +18,13 @@ public class AnalyticController {
     public ResponseEntity<?> getAnalytics(@RequestParam (required = false) String until) {
 
         try {
-            String flaskUrl = "http://localhost:5001/analytics/api/compute";
+            String flaskUrl = "http://localhost:5001/api/analysis/match_data";
             if (until != null) {
                 flaskUrl = flaskUrl + "?until=" + until;
             }
 
-            ResponseEntity<?> response = restTemplate.getForEntity(flaskUrl, String.class);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            ResponseEntity<String> flaskResponse = restTemplate.getForEntity(flaskUrl, String.class);
+            return flaskResponse;
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

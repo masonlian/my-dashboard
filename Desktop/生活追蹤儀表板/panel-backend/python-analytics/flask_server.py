@@ -6,14 +6,20 @@ import os
 import json
 
 
-app = Flask(__name__)
-app.register_blueprint(analyzer_bp,url_prefix="/analysis_controller",threaded=False)
+def create_app():
+  app = Flask(__name__)
+  app.register_blueprint(analyzer_bp,threaded=False)
+  return app
 
 
 
 
 
 if __name__ =='__main__' : 
+
+ app = create_app()
+ for r in app.url_map.iter_rules():
+     print(r)
  app.run(port=5001,debug=False,threaded=False )
 
  
