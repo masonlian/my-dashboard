@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh Hang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>analysis result</title>
+</head>
+<body>
+<h3>與你最匹配的城市形態為:<span id="city"></span> </h3>
+<p>形態描述：<br><span id = "description"></span> </p>
+<p>匹配分數:<span id = "score" ></span></p>
+
+<script>
+
+
+
+
+    //發出request取得從spring抓出計算結果
+    async  function getAnalysisResult() {
+        try {
+            const res = await fetch("/matchResult")
+            const data = await res.json()
+
+            console.log("回傳資料", data)
+
+            return  data?.return_most_matched_city ?? null
+
+        } catch {
+            console.error("回傳失敗")
+            return null
+        }
+
+    }
+    (
+        async ()=> {
+            cityData = await getAnalysisResult()
+            const $ = (id) => document.getElementById(id) //$的作用為取id
+            if (!cityData){
+                $("city").textContent= "讀取失敗";
+                $("description").textContent = "--";
+                $("score").textContent =   "--";
+                return
+            }
+
+            $("city").textContent = cityData.city_name ?? "--";
+            $("description").textContent = cityData.description ?? "--";
+            $("score").textContent = (cityData.match_score ?? 0).toFixed(5);
+
+
+        })()
+
+</script>
+
+</body>
+</html>

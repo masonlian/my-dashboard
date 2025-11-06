@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> 生活重要場所登記頁面</title>  
+    <title>追蹤所在場所</title>
 </head>
 
     <body>
 
-
-        <h1> 重要場所登記 </h1>
-        <p>＃這邊應該要是一個table可以輸入重要場所的經緯度</p>
-
-        <br>
-        <div id="location"></div>
-        <div id ="locationList"> </div>
+        <h1> 裝置位置追蹤中</h1>
+        <h3>您正位於 <br>
+            <span id = "location"></span></h3>
+        <div>
+            <p>距離場所登記還剩: <span id = "timer"></span>秒</p>
+            <span id ="locationList"></span>
+        </div>
 
     <script>
     //這段原本的語法當中少了非同步的概念，意思是當腳本呼叫API數據並不會理可以以物件的姿態馬上成為腳本的權域變數，
@@ -36,10 +36,13 @@
 
       const x = document.getElementById("location");
       const x1= document.getElementById("locationList")
+      const x2 = document.getElementById("timer")
+
+
 
 
       const DWELL_MS = 10000;
-      const CHECK_EVERY_MS = 5000;
+      const CHECK_EVERY_MS = 1000;
       const LAT_DELTA = 0.00005;
       const LNG_DELTA = 0.00005;
 
@@ -50,12 +53,16 @@
       let startedAt = Date.now();
       let posName = null ;
       let posDetail= null;
+      let remaining = DWELL_MS
+
 
       if ( !('geolocation' in navigator )) {
         x.textContent = "此瀏覽器不支援地理位置。"
       }
 
       else {
+
+
 
          const watchId  =  navigator.geolocation.watchPosition(  (pos)=> {
              console.log("watchId為:", watchId);
@@ -66,7 +73,6 @@
 
              const {latitude, longitude} = pos.coords;
              x.innerHTML =`緯度: ${latitude} <br>經度: ${longitude}`;
-
 
 
              const dLAT = Math.abs(latitude - anchorPos.coords.latitude);
@@ -166,6 +172,10 @@
               console.log("startedAt:",startedAt);
               console.log("現在時間:",now );
 
+              remaining = Math.ceil((DWELL_MS - (now - startedAt))/1000);
+              x2.innerHTML=remaining
+
+
               if (now - startedAt > DWELL_MS) {
 
 
@@ -198,8 +208,7 @@
 
                       }
 
-
-
+                      //到這邊彈出選項。
                       loadOption();
 
                       function loadOption(){
@@ -221,8 +230,6 @@
                       function showList() {
 
                           document.getElementById('list').showModal();
-
-
                           closeDialog.addEventListener("click",() => dialog.close());
 
                       }
@@ -294,9 +301,8 @@
               }
               ,
               CHECK_EVERY_MS)
-
-
       }
+
 
 
 
@@ -305,7 +311,3 @@
     </script>
 </body>
 </html>
-
-
-
-設計程式的過程應該要考慮到使每個環節都可以被追蹤
